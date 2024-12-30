@@ -1,10 +1,13 @@
-import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig"; // Importing Firebase auth instance
+import { useDispatch } from 'react-redux';
+import { useNavigate } from "react-router-dom";
+import { setEmail } from "../utilities/emailReducer"; // Import setEmail from your user slice
 
 function Signup() {
-  const [email, setEmail] = useState("");
+  const dispatch = useDispatch();
+  const [email, setEmailInput] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSignUp, setIsSignUp] = useState(true); // State to toggle between sign-up and login form
@@ -23,13 +26,19 @@ function Signup() {
         },
         body: JSON.stringify({ email }), // Send the email in the request body
       });
-  
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status} - ${response.statusText}`);
       }
+
       const data = await response.json();
-      console.log("User created successfully:", data);      alert("User created successfully");
-      navigate("/user-info"); // Redirect to login page after successful signup
+      console.log("User created successfully:", data);
+
+      // Dispatch the email to Redux store
+      dispatch(setEmail(email));
+
+      alert("User created successfully");
+      navigate("/user-info"); // Redirect to user-info page after successful signup
     } catch (err) {
       setError(err.message); // Set error message if signup fails
     }
@@ -41,8 +50,9 @@ function Signup() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      dispatch(setEmail(email));
       alert("User logged in successfully");
-      navigate("/user-info"); // Redirect to profile page after successful login
+      navigate("/user-info"); // Redirect to user-info page after successful login
     } catch (err) {
       setError(err.message); // Set error message if login fails
     }
@@ -58,7 +68,7 @@ function Signup() {
               type="email"
               placeholder="Enter your email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmailInput(e.target.value)} // Update input state
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>

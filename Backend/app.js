@@ -23,6 +23,9 @@ mongoose.connect('mongodb://localhost:27017/addressDB', {
 // Use userRoutes for all routes starting with /user
 app.use('/user', userRoutes); // Prefix routes with /user
 
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+});
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

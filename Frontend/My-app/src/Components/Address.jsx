@@ -5,8 +5,11 @@ import {
   MarkerF,
   useLoadScript,
 } from "@react-google-maps/api";
-
+import { useSelector} from "react-redux";
+import { useNavigate } from "react-router-dom";
 function Address() {
+  const email = useSelector((state) => state.user.email);
+  const navigate = useNavigate();
   const [address, setAddress] = useState("");
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: "AIzaSyA4AxZy-wrY6vMM4PBdQcc9N2ScQcbn6Q8", // Your Google Maps API Key
@@ -32,7 +35,28 @@ function Address() {
     },
   ]);
 
-  // Get the current location of the user
+   // Get the current location of the user
+  async function save(){
+    console.log("object")
+    const apiUrl = 'http://localhost:5000/user/add-address';
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({email : email ,  newAddress: address }),
+    });     if(response.ok){
+       setAddress("");
+       console.log(response)
+       navigate('/user-info')
+      }else{
+       console.log("error");
+   }
+  }
+
+
+
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -127,55 +151,98 @@ function Address() {
   if (!isLoaded) return <div>Loading Google Map...</div>;
 
   return (
-    <Fragment>
-      <div className="container">
-        <h1 className="text-center">Vite + React | Google Map Markers</h1>
-        <button
-          className="btn btn-secondary mb-3"
-          onClick={handleCurrentLocationClick}
-        >
-          Use Current Location
-        </button>
-
-        <div style={{ height: "90vh", width: "100%" }}>
-          <GoogleMap
-            center={currentLocation || { lat: 40.3947365, lng: 49.6898045 }}
-            zoom={10}
-            onClick={handleMapClick}
-            mapContainerStyle={{ width: "100%", height: "90vh" }}
+    <>
+<Fragment>
+  <div className="container-fluid d-flex flex-column align-items-center">
+  <h1 className="text-center text-2xl font-semibold text-gray-800 mb-8 w-full">
+  Put marker on desired location
+</h1>
+    <div className="d-flex w-100 justify-content-between">
+        <button 
+            onClick={() => navigate('/user-info')}
+            style={{
+              position: 'absolute',
+              left: '10px',
+              top: '9%',
+              transform: 'translateY(-50%)',
+              padding: '5px 10px',
+              backgroundColor: '#007bff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
           >
-            {/* Display the current location marker */}
-            {currentLocation && (
-              <MarkerF
-                position={currentLocation}
-                icon={{
-                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                  scaledSize: { width: 50, height: 50 },
-                }}
-              />
-            )}
+            Back to home
+          </button>
+          <button
+  className="py-2 px-6 mb-3 mt-3 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95"
+  onClick={handleCurrentLocationClick}
+  style={{ flexShrink: 0 }}
+>
+  Use Current Location
+</button>
 
-            {/* Display only the latest marker */}
-            {markers.map(({ id, name, position }) => (
-              <MarkerF
-                key={id}
-                position={position}
-                onClick={() => handleActiveMarker(id)}
-                onMouseOver={() => logAddress(position.lat, position.lng)}
-              >
-                {activeMarker === id ? (
-                  <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
-                    <div>
-                      <p>{name}</p>
-                    </div>
-                  </InfoWindowF>
-                ) : null}
-              </MarkerF>
-            ))}
-          </GoogleMap>
-        </div>
+
+      <div
+        style={{
+          flexGrow: 1,
+          height: "42.67vh", // 2/3 of the viewport height
+          marginLeft: "1rem",
+        }}
+      >
+        <GoogleMap
+          center={currentLocation || { lat: 40.3947365, lng: 49.6898045 }}
+          zoom={10}
+          onClick={handleMapClick}
+          mapContainerStyle={{ width: "100%", height: "100%" }}
+        >
+          {/* Display the current location marker */}
+          {currentLocation && (
+            <MarkerF
+              position={currentLocation}
+              icon={{
+                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                scaledSize: { width: 50, height: 50 },
+              }}
+            />
+          )}
+
+          {/* Display only the latest marker */}
+          {markers.map(({ id, name, position }) => (
+            <MarkerF
+              key={id}
+              position={position}
+              onClick={() => handleActiveMarker(id)}
+              onMouseOver={() => logAddress(position.lat, position.lng)}
+            >
+              {activeMarker === id ? (
+                <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
+                  <div>
+                    <p>{name}</p>
+                  </div>
+                </InfoWindowF>
+              ) : null}
+            </MarkerF>
+          ))}
+        </GoogleMap>
       </div>
-    </Fragment>
+    </div>
+  </div>
+</Fragment>
+{address && (
+  <div className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 rounded-xl shadow-xl bg-white max-w-md mx-auto mt-8">
+    <p className="text-center text-lg font-medium text-gray-800 mb-4">{address}</p>   
+    <button 
+      className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none transition duration-300 transform hover:scale-105 active:scale-95"
+      onClick={() => save()}
+    >
+      Save
+    </button>
+  </div>
+)}
+
+    </>
   );
 }
 

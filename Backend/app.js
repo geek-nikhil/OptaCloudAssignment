@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 
 // Connect to MongoDB (replace with your actual MongoDB URL)
-mongoose.connect('mongodb://localhost:27017/addressDB', {
+mongoose.connect('mongodb+srv://Nikhil:nikhil@cluster0.tgufu.mongodb.net/addressDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

@@ -19,12 +19,13 @@ function AddressSearch() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${encodeURIComponent(searchQuery)}&key=AlzaSyxKkcmlSmPSgcCBGBiLTnf8il-6LRkR3Ps`
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          searchQuery
+        )}&format=json&addressdetails=1`
       );
       const data = await response.json();
-      if (data.predictions) {
-        setSuggestions(data.predictions);
-      }
+      const suggestio = data.map((item) => item.display_name); // Extract display names
+      setSuggestions(suggestio);
     } catch (error) {
       console.error("Error fetching search suggestions:", error);
     } finally {
@@ -33,7 +34,7 @@ function AddressSearch() {
   };
 
   const handleSelectAddress = (address) => {
-    setSelectedAddress(address.description);
+    setSelectedAddress(address); // Directly set the address string
     setSuggestions([]); // Clear suggestions after selection
     setIsAddressSaved(false); // Reset saved state
   };
@@ -45,13 +46,13 @@ function AddressSearch() {
     }
 
     // Replace with your backend API URL
-    const apiUrl = 'http://localhost:5000/user/add-address';
+    const apiUrl = "http://localhost:5000/user/add-address";
 
     try {
       const response = await fetch(apiUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email: email, newAddress: selectedAddress }),
       });
@@ -59,7 +60,7 @@ function AddressSearch() {
       if (response.ok) {
         alert("Address saved successfully!");
         setIsAddressSaved(true); // Mark the address as saved
-        navigate('/user-info');
+        navigate("/user-info");
       } else {
         alert("Error saving address.");
       }
@@ -73,9 +74,9 @@ function AddressSearch() {
     <div className="container mx-auto p-4">
       <div className="relative mb-4">
         {/* Back Button */}
-        <button 
-          onClick={() => navigate('/user-info')}
-          className="absolute top-5 -left-20  transform -translate-y-1/2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
+        <button
+          onClick={() => navigate("/user-info")}
+          className="absolute top-5 -left-20 transform -translate-y-1/2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
         >
           Back
         </button>
@@ -90,18 +91,18 @@ function AddressSearch() {
         />
       </div>
 
-      {loading && <p className=' ml-44 '>Loading...</p>}
+      {loading && <p className="ml-44">Loading...</p>}
 
       <div>
         {suggestions.length > 0 && !loading && (
           <ul className="list-none p-0">
-            {suggestions.map((suggestion) => (
+            {suggestions.map((suggestion, index) => (
               <li
-                key={suggestion.place_id}
+                key={index}
                 onClick={() => handleSelectAddress(suggestion)}
-                className="cursor-pointer p-2 border-b border-gray-300 hover:bg-gray-100  ml-44 "
+                className="cursor-pointer p-2 border-b border-gray-300 hover:bg-gray-100 ml-44"
               >
-                {suggestion.description}
+                {suggestion}
               </li>
             ))}
           </ul>
@@ -124,7 +125,9 @@ function AddressSearch() {
         </div>
       )}
 
-      {isAddressSaved && <p className="text-green-500 mt-4">Address has been saved!</p>}
+      {isAddressSaved && (
+        <p className="text-green-500 mt-4">Address has been saved!</p>
+      )}
     </div>
   );
 }

@@ -81,27 +81,31 @@ function Address() {
   const logAddress = useCallback((lat, lng) => {
     const roundedLat = parseFloat(lat).toFixed(4);
     const roundedLng = parseFloat(lng).toFixed(4);
-
+  
     console.log("Logging address for latitude:", roundedLat, "and longitude:", roundedLng);
-
-    const geocodeUrl = `https://maps.gomaps.pro/maps/api/geocode/json?latlng=${roundedLat},${roundedLng}&key=AlzaSyxKkcmlSmPSgcCBGBiLTnf8il-6LRkR3Ps`;
-
+  
+    // Use OpenStreetMap's Nominatim API for reverse geocoding
+    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${roundedLat}&lon=${roundedLng}&addressdetails=1`;
+  
     fetch(geocodeUrl)
       .then((response) => response.json())
       .then((data) => {
-        console.log("Geocoding API response: ", data);
-        if (data.status === "OK" && data.results && data.results[0]) {
-          console.log("Address:", data.results[0].formatted_address);
-          setAddress(data.results[0].formatted_address);
+        console.log("Geocoding API response:", data);
+        
+        // Check if the response contains a valid address
+        if (data && data.display_name) {
+          console.log("Address:", data.display_name);
+          setAddress(data.display_name); // Set the address state
         } else {
-          console.log("No address found for this location or status is not OK");
+          console.log("No address found for this location.");
+          setAddress("Address not found");
         }
       })
       .catch((error) => {
         console.error("Error fetching address:", error);
       });
   }, []);
-
+  
   const handleMapClick = (event) => {
     const lat = event.latLng.lat();
     const lng = event.latLng.lng();
